@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
-import { Input } from "../ui";
+import { Input, Skeleton } from "../ui";
 import { FilterChecboxProps, FilterCheckbox } from "./filter-checkbox";
 
 type Item = FilterChecboxProps;
@@ -13,9 +13,12 @@ interface Props {
   defaultItems: Item[];
   limit?: number;
   searchInputPlaceholder?: string;
-  onChange?: (values: string[]) => void;
-  defaultValue?: string;
-  className?: string
+  onClickCheckbox?: (value: string) => void;
+  selectedIds?: Set<string>;
+  defaultValue?: string[];
+  className?: string;
+  loading: boolean;
+  name?: string;
 }
 
 export const CheckboxFiltersGroup: React.FC<Props> = (
@@ -25,9 +28,12 @@ export const CheckboxFiltersGroup: React.FC<Props> = (
     defaultItems,
     limit = 5,
     searchInputPlaceholder = 'Поиск',
-    onChange,
+    onClickCheckbox,
+    selectedIds,
     defaultValue,
     className,
+    loading,
+    name,
 }) => {
 
   const [showAll, setShowAll] = useState(false);
@@ -37,6 +43,20 @@ export const CheckboxFiltersGroup: React.FC<Props> = (
     console.log(value);
     
     setSearchValue(value);
+  }
+
+  if (loading) {
+    return (
+      <div className={className}>
+        <p className="font-bold mb-3">{title}</p>
+        {
+          ...Array(limit).fill(0).map((_, index) => (
+            <Skeleton key={index} className="h-6 mb-5 rounded-[8px]" />
+          ))
+        }
+        <Skeleton className="w-28 h-6 mb-5 rounded-[8px]" />
+      </div>
+    )
   }
 
   const list = showAll ? items.filter(item => item.text.toLowerCase().includes(searchValue.toLowerCase())) : defaultItems.slice(0, limit);
@@ -59,12 +79,13 @@ export const CheckboxFiltersGroup: React.FC<Props> = (
         {
           list.map((item, index) => (
             <FilterCheckbox 
-              onCheckedChange={(ids) => console.log(ids)}
-              checked={false}
+              onCheckedChange={() => onClickCheckbox?.(item.value)}
+              checked={selectedIds?.has(item.value)}
               key={String(item.value)}
               value={item.value}
               text={item.text}
               endAdornment={item.endAdornment}
+              name={name}
             />
           ))
         }
