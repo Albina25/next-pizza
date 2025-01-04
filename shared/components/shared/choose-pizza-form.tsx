@@ -1,7 +1,8 @@
 'use client';
 
 import { PizzaSize, PizzaType, pizzaTypes } from "@/shared/constants";
-import { getPizzaDetails, usePizzaOptions } from "@/shared/lib";
+import { usePizzaOptions } from "@/shared/hooks";
+import { getPizzaDetails } from "@/shared/lib";
 import { cn } from "@/shared/lib/utils";
 import { Ingredient, ProductItem } from "@prisma/client";
 import { GroupVariants, IngredientItem, ProductImage, Title } from ".";
@@ -13,9 +14,13 @@ interface Props {
   ingredients: Ingredient[];
   items: ProductItem[];
   loading?: boolean;
-  onClickAddCart?: (itemId: number, ingredients: number[]) => void;
+  onSubmit: (itemId: number, ingredients: number[]) => void;
   className?: string;
 }
+
+/**
+ * Форма выбора пиццы
+ */
 
 export const ChoosePizzaForm: React.FC<Props> = ({
   imageUrl,
@@ -23,45 +28,19 @@ export const ChoosePizzaForm: React.FC<Props> = ({
   ingredients,
   items,
   loading,
-  onClickAddCart,
+  onSubmit,
   className,
 }) => {
-  const {size, type, selectedIngredientsIds, availablePizzaSizes, setSize, setType, addIngredient} 
+  const {size, type, selectedIngredientsIds, availablePizzaSizes, currentItemId, setSize, setType, addIngredient} 
   = usePizzaOptions(items);
 
   const {textDetails, totalPrice} = getPizzaDetails(type, size, items, ingredients, selectedIngredientsIds);
 
-  // const textDetails = `${size}см, ${mapPizzaType[type]} тесто, 590г`;
-  
-  // const totalPrice = calcPizzaPrice(
-  //   type,
-  //   size,
-  //   items,
-  //   ingredients,
-  //   selectedIngredientsIds
-  // );
-  // const pizzaPrice = items.find(item => item.pizzaType === type && item.size === size)?.price || 0;
-  // const totalIngredientsPrice = ingredients
-  //   .filter(ingredient => selectedIngredientsIds.has(ingredient.id))
-  //   .reduce((acc, ingredient) => acc + ingredient.price, 0);
-  // const totalPrice = pizzaPrice + totalIngredientsPrice;
-
-  //const availablePizzaSizes = getAvailablePizzaSizes(items, type);
-  // const filteredPizzasByType = items.filter(item => item.pizzaType === type);
-  // const availablePizzaSizes = pizzaSizes.map((item) => ({
-  //   name: item.name,
-  //   value: item.value,
-  //   disabled: !filteredPizzasByType.some(pizza => Number(pizza.size) === Number(item.value)),
-  // }
-  // ));
-
-  // useEffect(() => {
-  //   const isAvailableCurrentSize = availablePizzaSizes?.find(item => Number(item.value) === size && !item.disabled);
-  //   const minAvailableSize = availablePizzaSizes?.find(size => !size.disabled)?.value;
-  //   if (!isAvailableCurrentSize && minAvailableSize) {
-  //     setSize(Number(minAvailableSize) as PizzaSize);
-  //   }
-  // }, [type]);
+  const handleClickAdd = () => {
+    if (currentItemId) {
+      onSubmit(currentItemId, Array.from(selectedIngredientsIds));
+    }
+  }
 
   return (
     <div className={cn(className, 'flex flex-1')}>
@@ -94,6 +73,8 @@ export const ChoosePizzaForm: React.FC<Props> = ({
       
 
       <Button
+        loading={loading}
+        onClick={handleClickAdd}
         className="h-[55px] px-10 text-base rounded-[18px] w-full mt-10"
       >
         Добавить в корзину за {totalPrice} ₽

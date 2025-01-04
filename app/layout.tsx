@@ -1,5 +1,6 @@
 //import localFont from "next/font/local";
 import { Nunito } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
 const nunito = Nunito({
@@ -7,6 +8,7 @@ const nunito = Nunito({
   variable: '--font-nunito',
   weight: ['400', '500', '600', '700', '800', '900'],
 });
+
 
 // const geistSans = localFont({
 //   src: "./fonts/GeistVF.woff",
@@ -31,6 +33,7 @@ export default function RootLayout({
       </head>
       <body className={nunito.variable}>
         {children}
+        <Toaster />
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 import { useSearchParams } from "next/navigation";
-import React from "react";
+import React, { useMemo } from "react";
 import { useSet } from "react-use";
 
 interface PriceProps {
@@ -52,7 +52,7 @@ export const useFilters = (): ReturnProps => {
     });
   };
 
-  return {
+  return useMemo(() => ({
     selectedIngredientsIds,
     sizes,
     pizzaTypes,
@@ -61,6 +61,5 @@ export const useFilters = (): ReturnProps => {
     setSizes,
     setPizzaTypes,
     setIngredients,
-  }
-  
+  }), [selectedIngredientsIds, sizes, pizzaTypes, prices]); 
 }

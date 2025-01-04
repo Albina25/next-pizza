@@ -1,5 +1,6 @@
 'use client';
 
+import { ProductWithRelations } from "@/@types/prisma";
 import { cn } from "@/shared/lib/utils";
 import { useCategoryStore } from "@/shared/store/category";
 import React, { useEffect } from "react";
@@ -9,7 +10,7 @@ import { Title } from "./title";
 
 interface Props {
   title: string;
-  items: any[];
+  items: ProductWithRelations[];
   categoryId: number;
   listClassName?: string;
   className?: string;
@@ -38,7 +39,9 @@ interface Props {
               id={item.id}
               name={item.name}
               imageUrl={item.imageUrl}
-              price={item.items[0].price}       />
+              price={item.items[0].price}
+              ingredients={item.ingredients}
+            />
           ))}
         </div>
       </div>
