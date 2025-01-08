@@ -1,14 +1,24 @@
 'use client';
 
-import { CheckoutSidebar, Container, Title } from "@/shared/components/shared";
-import { CheckoutAddressForm, CheckoutCart, CheckoutPersonalForm } from "@/shared/components/shared/checkout";
-import { checkoutFormSchema, CheckoutFormValues } from "@/shared/constants/checkout-form-schema";
+import { createOrder } from "@/app/actions";
+import {
+  CheckoutAddressForm,
+  CheckoutCart,
+  CheckoutPersonalForm,
+  CheckoutSidebar,
+  Container,
+  Title
+} from "@/shared/components";
+import { checkoutFormSchema, CheckoutFormValues } from "@/shared/constants";
 import { useCart } from "@/shared/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 export default function CheckoutPage() {
-  const {totalAmount, items, updateItemQuantity, removeCartItem} = useCart();
+  const [submitting, setSubmitting] = useState(false);
+  const {totalAmount, items, updateItemQuantity, removeCartItem, loading} = useCart();
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutFormSchema),
@@ -27,9 +37,19 @@ export default function CheckoutPage() {
     updateItemQuantity(id, newQuantity);
   };
 
-  const onSubmit = (data: CheckoutFormValues) => {
-    console.log(data);
-    
+  const onSubmit = async (data: CheckoutFormValues) => {
+    try {
+      setSubmitting(true);
+      const url = await createOrder(data);
+      toast.success('Заказ успешно оформлен! Переход на оплату...');
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.log(error);
+      setSubmitting(false);
+      toast.error('Произошла ошибка');
+    }
   };
 
   return (
@@ -40,14 +60,19 @@ export default function CheckoutPage() {
           <div className="flex gap-10">
             { /* Левая часть */}
             <div className="flex flex-col gap-10 flex-1 mb-20">
-              <CheckoutCart onClickCountButton={onClickCountButton} removeCartItem={removeCartItem} items={items} />
-              <CheckoutPersonalForm />
-              <CheckoutAddressForm />
+              <CheckoutCart 
+                onClickCountButton={onClickCountButton} 
+                removeCartItem={removeCartItem} 
+                items={items} 
+                loading={loading} 
+              />
+              <CheckoutPersonalForm className={loading ? "opacity-40 pointer-events-none" : ''} />
+              <CheckoutAddressForm className={loading ? "opacity-40 pointer-events-none" : ''} />
             </div>
 
             {/* Правая часть */}
             <div className="w-[450px]">
-              <CheckoutSidebar totalAmount={totalAmount} loading={false} />
+              <CheckoutSidebar totalAmount={totalAmount} loading={loading || submitting} />
             </div>
           </div>
         </form>
